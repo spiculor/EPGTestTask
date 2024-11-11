@@ -75,3 +75,16 @@ def get_participants(
         query = query.order_by(models.Participant.created_at.desc())
     
     return query.all()
+
+
+def check_and_update_match_limit(db: Session, participant: Participant, limit: int = 5):
+    now = datetime.utcnow()
+    if participant.last_match_date.date() != now.date():
+        participant.daily_match_count = 1
+        participant.last_match_date = now
+    elif participant.daily_match_count >= limit:
+        raise ValueError("Daily match limit reached")
+    else:
+        participant.daily_match_count += 1
+    db.commit()
+    db.refresh(participant)

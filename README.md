@@ -2,7 +2,8 @@
 
 1.Клонируйте репозиторий:
  git clone https://github.com/spiculor/EPGTestTask.git
- cd EPGTestTask
+ 
+ cd EPG
 
 2.Убедитесь, что у вас установлен Docker и Docker Compose.
 

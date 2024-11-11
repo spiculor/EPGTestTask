@@ -52,3 +52,25 @@ async def create_participant(
 
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    
+
+@app.post("/api/clients/{id}/match", response_model=MatchResponse)
+def match_participant(id: int, db: Session = Depends(get_db)):
+    current_user = crud.get_participant(db, id=id)
+    if not current_user:
+        raise HTTPException(status_code=404, detail="Participant not found")
+    
+    try:
+        crud.check_and_update_match_limit(db, current_user)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    matches = crud.find_mutual_matches(db, current_user)
+    if matches:
+        matched_user = matches[0]
+        return MatchResponse(
+            message=f"You matched with {matched_user.first_name}!",
+            email=matched_user.email
+        )
+
+    return MatchResponse(message="No match found")

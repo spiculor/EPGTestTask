@@ -45,3 +45,12 @@ def create_participant(db: Session, participant: schemas.ParticipantCreate, avat
     }
     
     return schemas.ParticipantResponse(**participant_data)
+
+
+def get_participant(db: Session, id: int):
+    return db.query(models.Participant).filter(models.Participant.id == id).first()
+
+
+def find_mutual_matches(db: Session, current_user):
+    matches = db.query(models.Participant).filter(models.Participant.email != current_user.email).all()
+    return matches

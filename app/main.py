@@ -74,3 +74,36 @@ def match_participant(id: int, db: Session = Depends(get_db)):
         )
 
     return MatchResponse(message="No match found")
+
+
+@app.get("/api/list", response_model=List[ParticipantResponse])
+def list_participants(
+    gender: Optional[str] = None,
+    first_name: Optional[str] = None,
+    last_name: Optional[str] = None,
+    sort_by: Optional[str] = None,
+    max_distance: Optional[float] = None,
+    user_latitude: Optional[float] = None,
+    user_longitude: Optional[float] = None,
+    db: Session = Depends(get_db)
+):
+    participants = crud.get_participants(db, gender, first_name, last_name, sort_by)
+
+    if max_distance and user_latitude is not None and user_longitude is not None:
+        filtered_participants = []
+        user_location = (user_latitude, user_longitude)
+        for participant in participants:
+            participant_location = (participant.latitude, participant.longitude)
+            distance = geodesic(user_location, participant_location).km
+            if distance <= max_distance:
+                filtered_participants.append(participant)
+        participants = filtered_participants
+
+    participants_dict = [
+        {**ParticipantResponse.from_orm(p).dict(), "created_at": p.created_at.isoformat()}
+        for p in participants
+    ]
+    cache_key = f"participants_{gender}_{first_name}_{last_name}_{sort_by}_{max_distance}_{user_latitude}_{user_longitude}"
+    redis_client.setex(cache_key, 3600, json.dumps(participants_dict))
+
+    return participants

@@ -54,3 +54,24 @@ def get_participant(db: Session, id: int):
 def find_mutual_matches(db: Session, current_user):
     matches = db.query(models.Participant).filter(models.Participant.email != current_user.email).all()
     return matches
+
+
+def get_participants(
+    db: Session,
+    gender: Optional[str] = None,
+    first_name: Optional[str] = None,
+    last_name: Optional[str] = None,
+    sort_by: Optional[str] = None
+) -> List[models.Participant]:
+    query = db.query(models.Participant)
+    
+    if gender:
+        query = query.filter(models.Participant.gender == gender)
+    if first_name:
+        query = query.filter(models.Participant.first_name == first_name)
+    if last_name:
+        query = query.filter(models.Participant.last_name == last_name)
+    if sort_by == "date":
+        query = query.order_by(models.Participant.created_at.desc())
+    
+    return query.all()

@@ -1,0 +1,14 @@
+fastapi
+sqlalchemy
+psycopg2-binary
+pydantic
+pillow
+uvicorn
+geopy
+passlib[bcrypt]
+python-multipart
+bcrypt==3.2.0
+redis
+pytest
+httpx
+pytest-asyncio
